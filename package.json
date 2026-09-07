@@ -1,0 +1,46 @@
+{
+  "name": "dsh-proxy-card",
+  "version": "1.0.0",
+  "description": "DSH settings card: manage multiple proxies (HTTP/HTTPS/SOCKS5) with per-proxy toggles; live-applied to the global fetch dispatcher",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "client.js",
+    "cordis.patch.yml",
+    "install.ps1",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "install": "node -e \"import('undici').then(()=>console.log('[dsh-proxy-card] undici OK')).catch(()=>{console.error('[dsh-proxy-card] undici missing - run npm install');process.exit(1)})\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liu200320/dsh-proxy-card.git"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "proxy",
+    "settings-card",
+    "undici"
+  ],
+  "author": "liu200320",
+  "license": "MIT",
+  "dependencies": {
+    "undici": "^7.16.0"
+  }
+}

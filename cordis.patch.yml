@@ -1,0 +1,6 @@
+# dsh-proxy-card bundle patch: mount the plugin into the host composition.
+- insert:
+    - id: dsh-proxy-card
+      name: 'dsh-proxy-card'
+      config:
+        enabled: true

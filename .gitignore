@@ -1,0 +1,11 @@
+# local dev
+node_modules/
+*.log
+npm-debug.log*
+
+# os
+Thumbs.db
+.DS_Store
+
+# runtime state (never commit user proxy secrets)
+proxy-card.json
