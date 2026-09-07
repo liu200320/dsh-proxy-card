@@ -5,7 +5,7 @@
 .DESCRIPTION
   自动完成：clone/更新仓库 -> npm install（undici 依赖）->
   dsh plugin add 到 desktop/web profile -> 校验 bundles 注册与文件解析。
-  幂等：重复执行即更新到最新版。
+  幂等：重复执行即更新到最新版（fetch 失败自动重新克隆自愈）。
 .EXAMPLE
   irm https://raw.githubusercontent.com/liu200320/dsh-proxy-card/main/install.ps1 | iex
 .NOTES
@@ -14,6 +14,7 @@
   DPC_INSTALL_DIR  安装位置，默认 %USERPROFILE%\.dsh\external\dsh-proxy-card
   DPC_REPO         仓库地址，默认本仓库
 #>
+# 注意：irm|iex 会把 BOM 粘在首行，#Requires 可能报无害警告；脚本不依赖它执行。
 
 # ===== 可配置参数（环境变量覆盖）=====
 $Profiles = if ($env:DPC_PROFILES) { $env:DPC_PROFILES -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ } } else { @("desktop", "web") }
@@ -58,20 +59,28 @@ if (-not $dshCmd) { Die "未找到 dsh CLI（PATH 与 %APPDATA%\DSH Desktop\host
 Ok "git / npm / dsh 就绪"
 
 # ── 1. clone 或更新 ────────────────────────────────────────────────
-if (Test-Path (Join-Path $InstallDir ".git")) {
-  Step "已存在，拉取最新版 $InstallDir"
-  $null = Invoke-Git -C $InstallDir fetch --force origin
-  $code = Invoke-Git -C $InstallDir reset --hard origin/main
-  if ($code -ne 0) { $code = Invoke-Git -C $InstallDir reset --hard origin/master }
-  if ($code -ne 0) { Die "git 更新失败，可手动删除 $InstallDir 后重试" }
-  Ok "已更新到最新版"
-} else {
-  Step "克隆仓库到 $InstallDir"
+function Install-Fresh {
+  Step "重新克隆仓库到 $InstallDir"
+  if (Test-Path $InstallDir) { Remove-Item $InstallDir -Recurse -Force }
   $parent = Split-Path $InstallDir
   if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
-  $code = Invoke-Git clone --depth 1 $Repo $InstallDir
+  $code = Invoke-Git clone --depth 1 --branch main $Repo $InstallDir
   if ($code -ne 0) { Die "git clone 失败（检查网络/代理后重试）" }
   Ok "克隆完成"
+}
+
+if (Test-Path (Join-Path $InstallDir ".git")) {
+  Step "已存在，拉取最新版 $InstallDir"
+  $code = Invoke-Git -C $InstallDir fetch --force --depth 1 origin main
+  if ($code -ne 0) {
+    Write-Host "[dsh-proxy-card] fetch 失败（远端分支变更/网络问题），自愈：重新克隆" -ForegroundColor Yellow
+    Install-Fresh
+  } else {
+    $code = Invoke-Git -C $InstallDir reset --hard FETCH_HEAD
+    if ($code -ne 0) { Install-Fresh } else { Ok "已更新到最新版" }
+  }
+} else {
+  Install-Fresh
 }
 
 # ── 2. 安装运行时依赖（undici）──────────────────────────────────────
