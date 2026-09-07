@@ -44,6 +44,7 @@ dsh plugin --profile web remove dsh-proxy-card
 | 即时生效 | 接管 `globalThis.fetch` → npm undici dispatcher，下一条请求即走代理 |
 | 持久化 | `%USERPROFILE%\.dsh\proxy-card.json`，重启自动恢复开关状态 |
 | 协议 | http / https / socks5 |
+<img width="540" height="238" alt="image" src="https://github.com/user-attachments/assets/3ab4c622-6bc9-44f6-b6f3-70f0def4e147" />
 
 ## 📡 覆盖范围
 
