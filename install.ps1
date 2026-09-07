@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   dsh-proxy-card 一键安装脚本（给 DSH AI 会话或人工执行均可）。
