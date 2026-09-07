@@ -8,17 +8,17 @@
   幂等：重复执行即更新到最新版。
 .EXAMPLE
   irm https://raw.githubusercontent.com/liu200320/dsh-proxy-card/main/install.ps1 | iex
-.EXAMPLE
-  .\install.ps1 -Profiles desktop,web
+.NOTES
+  可选配置（环境变量覆盖默认值，兼容 irm|iex 环境下无 param 块）：
+  DPC_PROFILES     profile 列表，逗号分隔，默认 "desktop,web"
+  DPC_INSTALL_DIR  安装位置，默认 %USERPROFILE%\.dsh\external\dsh-proxy-card
+  DPC_REPO         仓库地址，默认本仓库
 #>
-param(
-  # 要安装到的 dsh profile 列表
-  [string[]]$Profiles = @("desktop", "web"),
-  # 安装位置（稳定目录，重复执行自动 git pull 更新）
-  [string]$InstallDir = (Join-Path $env:USERPROFILE ".dsh\external\dsh-proxy-card"),
-  # 仓库地址
-  [string]$Repo = "https://github.com/liu200320/dsh-proxy-card.git"
-)
+
+# ===== 可配置参数（环境变量覆盖）=====
+$Profiles = if ($env:DPC_PROFILES) { $env:DPC_PROFILES -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ } } else { @("desktop", "web") }
+$InstallDir = if ($env:DPC_INSTALL_DIR) { $env:DPC_INSTALL_DIR } else { Join-Path $env:USERPROFILE ".dsh\external\dsh-proxy-card" }
+$Repo = if ($env:DPC_REPO) { $env:DPC_REPO } else { "https://github.com/liu200320/dsh-proxy-card.git" }
 
 $ErrorActionPreference = "Stop"
 function Step($m) { Write-Host "[dsh-proxy-card] $m" -ForegroundColor Cyan }
